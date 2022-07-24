@@ -45,6 +45,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
 }
 
 .seat {
@@ -52,4 +54,12 @@
   height: 50px;
   background-color: aquamarine;
   border: 1px solid black;
+}
+
+.seat-reserved {
+  background-color: lightgrey;
+}
+
+.best-seats {
+  background-color: chartreuse;
 }
