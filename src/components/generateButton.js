@@ -1,26 +1,42 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import database from '../database/db';
 
 const DB_LENGTH = Object.keys(database).length;
-const MIN_NUMBER_OF_SEATS_RESERVED = Math.floor(20 * DB_LENGTH / 100);
+const MIN_NUMBER_OF_SEATS_RESERVED = Math.floor((20 * DB_LENGTH) / 100);
 
-function GenerateButton({setReservedSeats}) {
+/* ------------------- Generate reserved seats from original db ------------------- */
+const GenerateReservedSeats = (db, seats) => {
+  let result = [];
+  for (let i = 0; i < seats; i++) {
+    result = Object.keys(db)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, seats);
+  }
+  return result;
+};
+
+function GenerateButton({setDb}) {
   const [numberOfReservedSeats, setNumberOfReservedSeats] = useState(MIN_NUMBER_OF_SEATS_RESERVED);
+  const [reservedSeats, setReservedSeats] = useState([]);
 
   const changeHandler = (event) => {
     setNumberOfReservedSeats(Number(event.target.value));
   };
-  
+
+  useEffect(() => {
+    setReservedSeats(GenerateReservedSeats(database, numberOfReservedSeats));
+  }, [numberOfReservedSeats]);
+
+  /* ------------------- Update database with reserved seats in state db ------------------- */
   const clickHandler = () => {
-    GenerateReservedSeats(database, numberOfReservedSeats);
-  };
-  
-  const GenerateReservedSeats = (db, seats) => {
-    let result = [];
-    for(let i = 0; i < seats; i++) {
-      result = Object.keys(db).sort(() => 0.5 - Math.random()).slice(0, seats);
+    let data = {...database};
+
+    for (let i = 0; i < reservedSeats.length; i++) {
+      data = {...data, [reservedSeats[i]]: {...data[reservedSeats[i]], reserved: true}};
+      setDb(data);
     }
-    setReservedSeats(result);
+
+    setReservedSeats(GenerateReservedSeats(database, numberOfReservedSeats));
   };
 
   return (

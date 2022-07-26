@@ -5,266 +5,216 @@ import FindPlaces from './components/findPlaces';
 import database from './database/db.js';
 
 const DEFAULT_PLACES = 2;
-let category_1 = []; // Auditorium 5000
-let category_2 = []; // Balcony-Mid 5000
-let category_3 = []; // Auditorium 4000
-let category_4 = []; // Balcony-Mid 4000
-let category_5 = []; // Auditorium 3000
-let category_6 = []; // Balcony-Mid 3000
-let category_9 = []; // Balcony-Mid 2000
+const CATEGORY_ARRAY = [
+  {id: 1, seats: []}, // Auditorium 5000
+  {id: 2, seats: []}, // Balcony-Mid 5000
+  {id: 3, seats: []}, // Auditorium 4000
+  {id: 4, seats: []}, // Balcony-Mid 4000
+  {id: 5, seats: []}, // Auditorium 3000
+  {id: 6, seats: []}, // Balcony-Mid 3000
+  {id: 9, seats: []}, // Balcony-Mid 2000
+];
 
-function App() {
-  const [reservedSeats, setReservedSeats] = useState([]);
-  const [places, setPlaces] = useState(DEFAULT_PLACES);
-  const [bestPlaces, setBestPlaces] = useState([]);
-  const [db, setDb] = useState(database);
+/* ------------------- Calculate row number  -------------------*/
+const calculateRowNumber = (db, category) => {
+  let categoryArr = category.map((item) => db[item].row);
+  return [...new Set(categoryArr)];
+};
 
-  console.log('---------------render---------------');
+/* ------------------- Calculate seat weigthing -------------------*/
+const calculateSeatWeigthing = (db, seat_id) => {
+  let rowId;
+  let areaId;
+  let seatNumber;
+  let seatCounter = 0;
 
-  /* Create reserved seats */
-  const updateSeatsReserved = useCallback(
-    (db, seats) => {
-      let data = {...db};
-      for (let i = 0; i < seats.length; i++) {
-        data = {...data, [seats[i]]: {...data[seats[i]], reserved: true}};
-        setDb(data);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    category_1 = []; // Auditorium 5000
-    category_2 = []; // Balcony-Mid 5000
-    category_3 = []; // Auditorium 4000
-    category_4 = []; // Balcony-Mid 4000
-    category_5 = []; // Auditorium 3000
-    category_6 = []; // Balcony-Mid 3000
-    category_9 = []; // Balcony-Mid 2000
-    updateSeatsReserved(database, reservedSeats); 
-  }, [updateSeatsReserved, reservedSeats]);
-  /* Create reserved seats */
-
-  /* Create category */
-  const createCategory = useCallback((db) => {
-    for (let i = 0; i < Object.keys(db).length; i++) {
-      if (Object.values(db)[i].price === 5000) {
-        if (Object.values(db)[i].area === 'auditorium') {
-          category_1.push(Object.keys(db)[i]);
-        }
-        if (Object.values(db)[i].area === 'balcony-mid') {
-          category_2.push(Object.keys(db)[i]);
-        }
-      }
-
-      if (Object.values(db)[i].price === 4000) {
-        if (Object.values(db)[i].area === 'auditorium') {
-          category_3.push(Object.keys(db)[i]);
-        }
-        if (Object.values(db)[i].area === 'balcony-mid') {
-          category_4.push(Object.keys(db)[i]);
-        }
-      }
-
-      if (Object.values(db)[i].price === 3000) {
-        if (Object.values(db)[i].area === 'auditorium') {
-          category_5.push(Object.keys(db)[i]);
-        }
-        if (Object.values(db)[i].area === 'balcony-mid') {
-          category_6.push(Object.keys(db)[i]);
-        }
-      }
-
-      if (Object.values(db)[i].price === 2000) {
-        if (Object.values(db)[i].area === 'balcony-mid') {
-          category_9.push(Object.keys(db)[i]);
-        }
-      }
+  for (let i = 0; i < Object.keys(db).length; i++) {
+    if (seat_id === Number(Object.keys(db)[i])) {
+      seatNumber = Object.values(db)[i].seat;
+      areaId = Object.values(db)[i].area;
+      rowId = Object.values(db)[i].row;
+      break;
     }
-  }, []);
-
-  useEffect(() => {
-    createCategory(db);
-  }, [createCategory, db]);
-  /* Create category */
-
-
-  const calculateRowNumber = (db, category) => {
-    let categoryArr = category.map((item) => db[item].row);
-    return [...new Set(categoryArr)];
-  };
-
-  const calculateSeatWeigthing = (db, seat_id) => {
-    let rowId;
-    let areaId;
-    let seatNumber;
-    let seatCounter = 0;
-
-    for (let i = 0; i < Object.keys(db).length; i++) {
-      if (seat_id === Number(Object.keys(db)[i])) {
-        seatNumber = Object.values(db)[i].seat;
-        areaId = Object.values(db)[i].area;
-        rowId = Object.values(db)[i].row;
-        break;
-      }
+  }
+  for (let i = 0; i < Object.keys(db).length; i++) {
+    if (Object.values(db)[i].area === areaId && Object.values(db)[i].row === rowId) {
+      seatCounter++;
     }
-    for (let i = 0; i < Object.keys(db).length; i++) {
-      if (Object.values(db)[i].area === areaId && Object.values(db)[i].row === rowId) {
-        seatCounter++;
-      }
+  }
+
+  if (seatCounter % 2 === 0) {
+    if (seatNumber === seatCounter / 2) {
+      return 0;
     }
 
-    if (seatCounter % 2 === 0) {
-      if(seatNumber === seatCounter / 2) {
-        return 0;
-      }
-
-      if (seatNumber < seatCounter / 2) {
-        return seatCounter / 2 - seatNumber;
-      }
-
-      if (seatNumber > seatCounter / 2) {
-        return seatNumber - seatCounter / 2 - 1;
-      }
+    if (seatNumber < seatCounter / 2) {
+      return seatCounter / 2 - seatNumber;
     }
 
-    if (seatCounter % 2 !== 0) {
-      if (seatNumber === Math.ceil(seatCounter / 2)) {
-        return 0;
-      }
-
-      if (seatNumber < Math.ceil(seatCounter / 2)) {
-        return Math.ceil(seatCounter / 2) - seatNumber;
-      }
-
-      if (seatNumber > Math.ceil(seatCounter / 2)) {
-        return seatNumber - Math.ceil(seatCounter / 2);
-      }
+    if (seatNumber > seatCounter / 2) {
+      return seatNumber - seatCounter / 2 - 1;
     }
-  };
+  }
 
-  const findPlaceOptions = useCallback((db) => {
-    let optionsArray = [];
-    let tempResult = [];
-    let tempWeigth = 0;
-    let counter = 0;
-    let currentRow = Math.min(...calculateRowNumber(db, category_1));
+  if (seatCounter % 2 !== 0) {
+    if (seatNumber === Math.ceil(seatCounter / 2)) {
+      return 0;
+    }
 
-    // debugger;
-    for (let i = 0; i < category_1.length; i++) {
+    if (seatNumber < Math.ceil(seatCounter / 2)) {
+      return Math.ceil(seatCounter / 2) - seatNumber;
+    }
 
-      if(counter === places) {
-        optionsArray.push({[tempWeigth + currentRow * currentRow]: [...tempResult]});
+    if (seatNumber > Math.ceil(seatCounter / 2)) {
+      return seatNumber - Math.ceil(seatCounter / 2);
+    }
+  }
+};
+
+/* ------------------- Find place options -------------------*/
+const findPlaceOptions = (db, placesToBook, category) => {
+  let optionsArray = [];
+  let tempResult = [];
+  let tempWeigth = 0;
+  let counter = 0;
+  let currentRow = Math.min(...calculateRowNumber(db, category));
+
+  for (let i = 0; i < category.length; i++) {
+    if (counter === placesToBook) {
+      optionsArray.push({[tempWeigth + currentRow * currentRow]: [...tempResult]});
+      tempResult = [];
+      tempWeigth = 0;
+      counter = 0;
+      i = i - (placesToBook - 1);
+    }
+
+    if (counter < placesToBook) {
+      if (currentRow !== Object.entries(db)[Number(category[i]) - 1][1].row) {
         tempResult = [];
         tempWeigth = 0;
         counter = 0;
-        i = i - (places - 1);
       }
 
-      if(counter < places) {
-        if(currentRow !== Object.entries(db)[Number(category_1[i]) - 1][1].row) {
-          tempResult = [];
-          tempWeigth = 0;
-          counter = 0;
-        }
+      if (Object.entries(db)[Number(category[i]) - 1][1].reserved === false) {
+        tempResult.push(Object.keys(db)[Number(category[i]) - 1]);
+        tempWeigth += calculateSeatWeigthing(db, Number(category[i]));
+        currentRow = Object.entries(db)[Number(category[i] - 1)][1].row;
+        counter++;
+      }
 
-        if (Object.entries(db)[Number(category_1[i]) - 1][1].reserved === false) {
-          tempResult.push(Object.keys(db)[Number(category_1[i]) - 1]);
-          tempWeigth += calculateSeatWeigthing(db, Number(category_1[i]));
-          currentRow = Object.entries(db)[Number(category_1[i] - 1)][1].row;
-          counter++;
-        }
+      if (Object.entries(db)[Number(category[i]) - 1][1].reserved === true) {
+        tempResult = [];
+        tempWeigth = 0;
+        counter = 0;
+      }
 
-        if(Object.entries(db)[Number(category_1[i]) - 1][1].reserved === true) {
-          tempResult = [];
-          tempWeigth = 0;
-          counter = 0;
-        }
-
-        if(i === category_1.length - 1 && tempResult.length === places) {
-          optionsArray.push({[tempWeigth + currentRow * currentRow]: [...tempResult]});
-        }
-
+      if (i === category.length - 1 && tempResult.length === placesToBook) {
+        optionsArray.push({[tempWeigth + currentRow * currentRow]: [...tempResult]});
       }
     }
-    return optionsArray;
-  }, [places]);
+  }
+  console.log(optionsArray);
+  return optionsArray;
+};
 
+function App() {
+  const [places, setPlaces] = useState(DEFAULT_PLACES);
+  const [bestPlaces, setBestPlaces] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [db, setDb] = useState(database);
+  console.log('---------------render---------------');
 
-  const findBestPlaces2 = useCallback((db) => {
-    let result = [];
-    let counter = 0;
-
-    // debugger;
-    for (let i = 0; i < category_1.length; i++) {  
-      if(counter === places) {
-
-        if(result !== []) {
-          if(Object.values(db)[Number(category_1[i]) - 1].row !== Number(result[result.length - 1][1].row)) {
-            counter = 0;
-            result = [];
-            continue;
-          }
-        }
-
-        if (!Object.values(db)[Number(category_1[i]) - 1].reserved && calculateSeatWeigthing(db, Number(category_1[i])) < calculateSeatWeigthing(db, Number(result[0][0]))) {
-          result.push(Object.entries(db)[Number(category_1[i]) - 1]);
-          result.shift();
-        }
-
-        if(!Object.values(db)[Number(category_1[i]) - 1].reserved && calculateSeatWeigthing(db, Number(category_1[i])) > calculateSeatWeigthing(db, Number(result[0][0]))) {
-          return result;
-        }
-  
-        if(Object.values(db)[Number(category_1[i]) - 1].reserved === true) {
-          // continue;
-          return result;
-        }
-      }
-
-      if(counter < places) {
-        if (!Object.entries(db)[Number(category_1[i]) - 1].reserved) {
-          result.push(Object.entries(db)[Number(category_1[i]) - 1]);
-          counter++;
-
-          if(result !== []) {
-            if(Object.values(db)[Number(category_1[i]) - 1].row !== Number(result[result.length - 1][1].row)) {
-              counter = 0;
-              result = [];
-              continue;
-            }
-          }
-        }
-  
-        if(Object.values(db)[Number(category_1[i]) - 1].reserved === true) {
-          counter = 0;
-          result = [];
-        }
-      }
-    }
-    return result;
-  }, [places]);
-
+  /* ------------------- Create category based on original database -------------------*/
   useEffect(() => {
-    // console.log(calculateRowNumber(db, category_1));
-    // console.log(calculateSeatWeigthing(db, 37));
-    console.log(findPlaceOptions(db));
-    
-    let options = findPlaceOptions(db);
-    let bestOptions = Math.min(...options.map((item) => {
-      return Object.keys(item)[0];
-    }));
-    let bestPlaces = Object.values(Object.values(options.filter((item) => {
-      return item[bestOptions];
-    })[0]))[0];
+    const createCategory = (db, categoryArray) => {
+      for (let i = 0; i < Object.keys(db).length; i++) {
+        if (Object.values(db)[i].price === 5000) {
+          if (Object.values(db)[i].area === 'auditorium') {
+            Object.values(categoryArray[0])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-mid') {
+            Object.values(categoryArray[1])[1].push(Object.keys(db)[i]);
+          }
+        }
 
-    console.log(bestOptions);
-    console.log(bestPlaces);
-    setBestPlaces(bestPlaces);
-    
+        if (Object.values(db)[i].price === 4000) {
+          if (Object.values(db)[i].area === 'auditorium') {
+            Object.values(categoryArray[2])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-mid') {
+            Object.values(categoryArray[3])[1].push(Object.keys(db)[i]);
+          }
+        }
 
-    // console.log(Object.values(bestPlaces[0]));
-  }, [db, findPlaceOptions, places]);
+        if (Object.values(db)[i].price === 3000) {
+          if (Object.values(db)[i].area === 'auditorium') {
+            Object.values(categoryArray[4])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-mid') {
+            Object.values(categoryArray[5])[1].push(Object.keys(db)[i]);
+          }
+        }
+
+        if (Object.values(db)[i].price === 2000) {
+          if (Object.values(db)[i].area === 'balcony-mid') {
+            Object.values(categoryArray[6])[1].push(Object.keys(db)[i]);
+          }
+        }
+      }
+      console.log('category created');
+    };
+    createCategory(database, CATEGORY_ARRAY);
+  }, []);
+
+  /* ------------------- Find best places after having the best place options -------------------*/
+  const findBestPlaces = useCallback(
+    (db, categoryArray) => {
+      let allPlaceOption = [];
+      let bestOptions;
+      let bestPlaces;
+
+      for (let i = 0; i < categoryArray.length; i++) {
+        allPlaceOption = findPlaceOptions(db, places, Object.values(categoryArray[i])[1]);
+
+        if (allPlaceOption.length !== 0) {
+          break;
+        }
+
+        if (i === categoryArray.length - 1 && allPlaceOption.length === 0) {
+          setErrorMessage('Based on the input parameters no seat can be selected!');
+          setBestPlaces([]);
+          return null;
+        }
+      }
+
+      if (allPlaceOption.length !== 0) {
+        console.log(allPlaceOption);
+
+        bestOptions = Math.min(
+          ...allPlaceOption.map((item) => {
+            return Object.keys(item)[0];
+          })
+        );
+        console.log(bestOptions);
+
+        bestPlaces = Object.values(
+          Object.values(
+            allPlaceOption.filter((item) => {
+              return item[bestOptions];
+            })[0]
+          )
+        )[0];
+        console.log(bestPlaces);
+
+        setBestPlaces(bestPlaces);
+        setErrorMessage('');
+      }
+    },
+    [places]
+  );
+  useEffect(() => {
+    findBestPlaces(db, CATEGORY_ARRAY);
+  }, [db, findBestPlaces]);
 
   return (
     <div className='App'>
@@ -276,7 +226,9 @@ function App() {
               return (
                 index < 14 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -291,7 +243,9 @@ function App() {
                 index >= 14 &&
                 index < 29 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -306,7 +260,9 @@ function App() {
                 index >= 29 &&
                 index < 45 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -321,7 +277,9 @@ function App() {
                 index >= 45 &&
                 index < 62 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -336,7 +294,9 @@ function App() {
                 index >= 62 &&
                 index < 80 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -351,7 +311,9 @@ function App() {
                 index >= 80 &&
                 index < 99 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -366,7 +328,9 @@ function App() {
                 index >= 99 &&
                 index < 119 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -381,7 +345,9 @@ function App() {
                 index >= 119 &&
                 index < 140 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
+                      bestPlaces.includes(item) ? 'best-seats' : ''
+                    }`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -398,7 +364,7 @@ function App() {
                 index >= 140 &&
                 index < 158 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -413,7 +379,7 @@ function App() {
                 index >= 158 &&
                 index < 177 && (
                   <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''}`}
+                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''}  ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
                     key={`id_${index}`}
                   >
                     {db[item].seat},{db[item].price}
@@ -425,8 +391,9 @@ function App() {
         </div>
         <div className='grid-item-d'>
           <div>Legend</div>
-          <GenerateButton setReservedSeats={setReservedSeats} />
+          <GenerateButton setDb={setDb} />
           <FindPlaces places={places} setPlaces={setPlaces} />
+          {errorMessage && <p>{errorMessage}</p>}
         </div>
       </div>
     </div>
