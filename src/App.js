@@ -1,7 +1,8 @@
 import './App.css';
 import {useCallback, useEffect, useState} from 'react';
-import GenerateButton from './components/generateButton';
-import FindPlaces from './components/findPlaces';
+import GenerateButton from './components/GenerateButton';
+import FindPlaces from './components/FindPlaces';
+import DisplayResult from './components/DisplayResult';
 import database from './database/db.js';
 
 const DEFAULT_PLACES = 2;
@@ -10,10 +11,30 @@ const CATEGORY_ARRAY = [
   {id: 2, seats: []}, // Balcony-Mid 5000
   {id: 3, seats: []}, // Auditorium 4000
   {id: 4, seats: []}, // Balcony-Mid 4000
-  {id: 5, seats: []}, // Auditorium 3000
-  {id: 6, seats: []}, // Balcony-Mid 3000
-  {id: 9, seats: []}, // Balcony-Mid 2000
+  {id: 5, seats: []}, // Balcony-Left 4000
+  {id: 6, seats: []}, // Balcony-Right 4000
+  {id: 7, seats: []}, // Auditorium 3000
+  {id: 8, seats: []}, // Balcony-Mid 3000
+  {id: 9, seats: []}, // Balcony-Left 3000
+  {id: 10, seats: []}, // Balcony-Right 3000
+  {id: 11, seats: []}, // Box-Left-1 3000
+  {id: 12, seats: []}, // Box-Left-2 3000
+  {id: 13, seats: []}, // Box-Right-1 3000
+  {id: 14, seats: []}, // Box-Right-2 3000
+  {id: 15, seats: []}, // Balcony-Mid 2000
+  {id: 16, seats: []}, // Balcony-Left 2000
+  {id: 17, seats: []}, // Balcony-Right 2000
+  {id: 18, seats: []}, // Box-Left-1 2000
+  {id: 19, seats: []}, // Box-Left-2 2000
+  {id: 20, seats: []}, // Box-Right-1 2000
+  {id: 21, seats: []}, // Box-Right-2 2000
 ];
+const PRICE_CATEGORY = {
+  5000: 'seat-red',
+  4000: 'seat-yellow',
+  3000: 'seat-blue',
+  2000: 'seat-green',
+};
 
 /* ------------------- Calculate row number  -------------------*/
 const calculateRowNumber = (db, category) => {
@@ -144,24 +165,66 @@ function App() {
           if (Object.values(db)[i].area === 'balcony-mid') {
             Object.values(categoryArray[3])[1].push(Object.keys(db)[i]);
           }
+          if (Object.values(db)[i].area === 'balcony-left') {
+            Object.values(categoryArray[4])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-right') {
+            Object.values(categoryArray[5])[1].push(Object.keys(db)[i]);
+          }
         }
 
         if (Object.values(db)[i].price === 3000) {
           if (Object.values(db)[i].area === 'auditorium') {
-            Object.values(categoryArray[4])[1].push(Object.keys(db)[i]);
+            Object.values(categoryArray[6])[1].push(Object.keys(db)[i]);
           }
           if (Object.values(db)[i].area === 'balcony-mid') {
-            Object.values(categoryArray[5])[1].push(Object.keys(db)[i]);
+            Object.values(categoryArray[7])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-left') {
+            Object.values(categoryArray[8])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-right') {
+            Object.values(categoryArray[9])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-left-1') {
+            Object.values(categoryArray[10])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-left-2') {
+            Object.values(categoryArray[11])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-right-1') {
+            Object.values(categoryArray[12])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-right-2') {
+            Object.values(categoryArray[13])[1].push(Object.keys(db)[i]);
           }
         }
 
         if (Object.values(db)[i].price === 2000) {
           if (Object.values(db)[i].area === 'balcony-mid') {
-            Object.values(categoryArray[6])[1].push(Object.keys(db)[i]);
+            Object.values(categoryArray[14])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-left') {
+            Object.values(categoryArray[15])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'balcony-right') {
+            Object.values(categoryArray[16])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-left-1') {
+            Object.values(categoryArray[17])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-left-2') {
+            Object.values(categoryArray[18])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-right-1') {
+            Object.values(categoryArray[19])[1].push(Object.keys(db)[i]);
+          }
+          if (Object.values(db)[i].area === 'box-right-2') {
+            Object.values(categoryArray[20])[1].push(Object.keys(db)[i]);
           }
         }
       }
-      console.log('category created');
+      console.log(CATEGORY_ARRAY);
     };
     createCategory(database, CATEGORY_ARRAY);
   }, []);
@@ -172,42 +235,51 @@ function App() {
       let allPlaceOption = [];
       let bestOptions;
       let bestPlaces;
+      let checkReserved = [];
 
-      for (let i = 0; i < categoryArray.length; i++) {
-        allPlaceOption = findPlaceOptions(db, places, Object.values(categoryArray[i])[1]);
+      Object.values(db).map((item) => checkReserved.push(item.reserved));
+
+      if (checkReserved.includes(true)) {
+        for (let i = 0; i < categoryArray.length; i++) {
+          allPlaceOption = findPlaceOptions(
+            db,
+            places,
+            Object.values(categoryArray[i])[1]
+          );
+
+          if (allPlaceOption.length !== 0) {
+            break;
+          }
+
+          if (i === categoryArray.length - 1 && allPlaceOption.length === 0) {
+            setErrorMessage('Based on the input parameters no seat can be selected!');
+            setBestPlaces([]);
+            return null;
+          }
+        }
 
         if (allPlaceOption.length !== 0) {
-          break;
+          console.log(allPlaceOption);
+
+          bestOptions = Math.min(
+            ...allPlaceOption.map((item) => {
+              return Object.keys(item)[0];
+            })
+          );
+          console.log(bestOptions);
+
+          bestPlaces = Object.values(
+            Object.values(
+              allPlaceOption.filter((item) => {
+                return item[bestOptions];
+              })[0]
+            )
+          )[0];
+          console.log(bestPlaces);
+
+          setBestPlaces(bestPlaces);
+          setErrorMessage('');
         }
-
-        if (i === categoryArray.length - 1 && allPlaceOption.length === 0) {
-          setErrorMessage('Based on the input parameters no seat can be selected!');
-          setBestPlaces([]);
-          return null;
-        }
-      }
-
-      if (allPlaceOption.length !== 0) {
-        console.log(allPlaceOption);
-
-        bestOptions = Math.min(
-          ...allPlaceOption.map((item) => {
-            return Object.keys(item)[0];
-          })
-        );
-        console.log(bestOptions);
-
-        bestPlaces = Object.values(
-          Object.values(
-            allPlaceOption.filter((item) => {
-              return item[bestOptions];
-            })[0]
-          )
-        )[0];
-        console.log(bestPlaces);
-
-        setBestPlaces(bestPlaces);
-        setErrorMessage('');
       }
     },
     [places]
@@ -219,181 +291,479 @@ function App() {
   return (
     <div className='App'>
       <div className='grid-container'>
-        <div className='grid-item-a'>Stage</div>
-        <div className='grid-item-b'>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index < 14 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
+        <div className='grid-item-header'>
+          <hr className='stage'></hr>
+        </div>
+
+        <div className='grid-item-middle'>
+          {/* Auditorium */}
+          <div className='area-container-middle'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index < 14 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 14 &&
+                  index < 29 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>3</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 29 &&
+                  index < 45 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>4</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 45 &&
+                  index < 62 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>5</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 62 &&
+                  index < 80 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>6</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 80 &&
+                  index < 99 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>7</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 99 &&
+                  index < 119 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>8</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 119 &&
+                  index < 140 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
           </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 14 &&
-                index < 29 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
-          </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 29 &&
-                index < 45 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
-          </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 45 &&
-                index < 62 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
-          </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 62 &&
-                index < 80 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
-          </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 80 &&
-                index < 99 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
-          </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 99 &&
-                index < 119 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
-          </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 119 &&
-                index < 140 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${
-                      bestPlaces.includes(item) ? 'best-seats' : ''
-                    }`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
+          {/* Balcony-Middle */}
+          <div className='area-container-middle'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 140 &&
+                  index < 158 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 158 &&
+                  index < 177 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
           </div>
         </div>
-        <div className='grid-item-c'>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 140 &&
-                index < 158 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''} ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
+
+        <div className='grid-item-left'>
+          {/* Box-Left-1 */}
+          <div className='area-container-side'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 193 &&
+                  index < 196 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 196 &&
+                  index < 199 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
           </div>
-          <div className='seat-container'>
-            {Object.keys(db).map((item, index) => {
-              return (
-                index >= 158 &&
-                index < 177 && (
-                  <div
-                    className={`seat ${db[item].reserved ? 'seat-reserved' : ''}  ${bestPlaces.includes(item) ? 'best-seats' : ''}`}
-                    key={`id_${index}`}
-                  >
-                    {db[item].seat},{db[item].price}
-                  </div>
-                )
-              );
-            })}
+          {/* Box-Left-2 */}
+          <div className='area-container-side'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 199 &&
+                  index < 202 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 202 &&
+                  index < 205 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+          </div>
+          {/* Balcony-Left */}
+          <div className='area-container-side'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 177 &&
+                  index < 181 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 181 &&
+                  index < 185 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
           </div>
         </div>
-        <div className='grid-item-d'>
-          <div>Legend</div>
-          <GenerateButton setDb={setDb} />
-          <FindPlaces places={places} setPlaces={setPlaces} />
-          {errorMessage && <p>{errorMessage}</p>}
+
+        <div className='grid-item-right'>
+          {/* Box-Right-1 */}
+          <div className='area-container-side'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 205 &&
+                  index < 208 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 208 &&
+                  index < 211 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+          </div>
+          {/* Box-Right-2 */}
+          <div className='area-container-side'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 211 &&
+                  index < 214 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 214 &&
+                  index < 217 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+          </div>
+          {/* Balcony-Right */}
+          <div className='area-container-side'>
+            <div className='seat-container'>
+              <p className='row-number'>1</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 185 &&
+                  index < 189 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      } ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+            <div className='seat-container'>
+              <p className='row-number'>2</p>
+              {Object.keys(db).map((item, index) => {
+                return (
+                  index >= 189 &&
+                  index < 193 && (
+                    <div
+                      className={`seat ${PRICE_CATEGORY[db[item].price]} ${
+                        db[item].reserved ? 'seat-reserved' : ''
+                      }  ${bestPlaces.includes(item) ? 'seat-best' : ''}`}
+                      key={`id_${index}`}
+                    >
+                      {db[item].seat}
+                    </div>
+                  )
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className='grid-item-legend'>
+          <div className='legend-container'>
+            <ul className='legend-item'>
+              <li className='seat-red'></li>
+              <li>5.000 Ft</li>
+            </ul>
+            <ul className='legend-item'>
+              <li className='seat-yellow'></li>
+              <li>4.000 Ft</li>
+            </ul>
+            <ul className='legend-item'>
+              <li className='seat-blue'></li>
+              <li>3.000 Ft</li>
+            </ul>
+            <ul className='legend-item'>
+              <li className='seat-green'></li>
+              <li>2.000 Ft</li>
+            </ul>
+            <ul className='legend-item'>
+              <li className='seat-reserved'></li>
+              <li>Occupied</li>
+            </ul>
+            <ul className='legend-item'>
+              <li className='seat-best'></li>
+              <li>Best</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className='grid-item-input'>
+          <div className='input-container'>
+            <div className='input-item'>
+              <GenerateButton setDb={setDb} />
+            </div>
+            <div className='input-item'>
+              <FindPlaces places={places} setPlaces={setPlaces} />
+            </div>
+            <div className='input-item'>
+              <DisplayResult errorMessage={errorMessage} bestPlaces={bestPlaces} db={db}/>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -16,7 +16,9 @@ const GenerateReservedSeats = (db, seats) => {
 };
 
 function GenerateButton({setDb}) {
-  const [numberOfReservedSeats, setNumberOfReservedSeats] = useState(MIN_NUMBER_OF_SEATS_RESERVED);
+  const [numberOfReservedSeats, setNumberOfReservedSeats] = useState(
+    MIN_NUMBER_OF_SEATS_RESERVED
+  );
   const [reservedSeats, setReservedSeats] = useState([]);
 
   const changeHandler = (event) => {
@@ -40,18 +42,21 @@ function GenerateButton({setDb}) {
   };
 
   return (
-    <div>
-      <input
-        type='number'
-        name='reservedSeats'
-        min={MIN_NUMBER_OF_SEATS_RESERVED}
-        max={DB_LENGTH}
-        value={numberOfReservedSeats}
-        onChange={changeHandler}
-      />
-      <button type='button' onClick={clickHandler}>
-        Generate occupied seats
-      </button>
+    <div className='occupied-input-container'>
+      <div className='input-title'>Occupied seats</div>
+      <div>
+        <input
+          type='number'
+          name='reservedSeats'
+          min={MIN_NUMBER_OF_SEATS_RESERVED}
+          max={DB_LENGTH}
+          value={numberOfReservedSeats}
+          onChange={changeHandler}
+        />
+        <button type='button' onClick={clickHandler}>
+          Generate
+        </button>
+      </div>
     </div>
   );
 }

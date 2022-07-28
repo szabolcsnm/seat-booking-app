@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from 'react';
 
 function FindPlaces({places, setPlaces}) {
   const incrementHandler = () => {
@@ -9,12 +9,19 @@ function FindPlaces({places, setPlaces}) {
   };
 
   return (
-    <div>
-      <button type="button" onClick={decrementHandler} disabled={places === 2}>-</button>
-      {`seats: ${places}`}
-      <button type="button" onClick={incrementHandler} disabled={places === 8}>+</button>
+    <div className='seat-input-container'>
+      <div className='input-title'>Seats</div>
+      <div>
+        <button type='button' onClick={decrementHandler} disabled={places === 2}>
+          -
+        </button>
+        <span className='input-result'>{places}</span>
+        <button type='button' onClick={incrementHandler} disabled={places === 8}>
+          +
+        </button>
+      </div>
     </div>
-  )
-};
+  );
+}
 
 export default FindPlaces;
