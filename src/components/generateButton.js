@@ -1,9 +1,6 @@
 import {useEffect, useState} from 'react';
 import database from '../database/db';
 
-const DB_LENGTH = Object.keys(database).length;
-const MIN_NUMBER_OF_SEATS_RESERVED = Math.floor((20 * DB_LENGTH) / 100);
-
 /* ------------------- Generate reserved seats from original db ------------------- */
 const GenerateReservedSeats = (db, seats) => {
   let result = [];
@@ -15,14 +12,28 @@ const GenerateReservedSeats = (db, seats) => {
   return result;
 };
 
-function GenerateButton({setDb}) {
-  const [numberOfReservedSeats, setNumberOfReservedSeats] = useState(
-    MIN_NUMBER_OF_SEATS_RESERVED
-  );
+function GenerateButton({
+  setDb,
+  numberOfReservedSeats,
+  setNumberOfReservedSeats,
+  databaseLength,
+  minNumberOfReservedSeats,
+}) {
   const [reservedSeats, setReservedSeats] = useState([]);
+  const [error, setError] = useState(false);
 
   const changeHandler = (event) => {
-    setNumberOfReservedSeats(Number(event.target.value));
+    if (event.target.validity.valid) {
+      const value = event.target.value;
+
+      setNumberOfReservedSeats(value);
+
+      if (value < 43 || value > 217) {
+        setError(true);
+      } else {
+        setError(false);
+      }
+    }
   };
 
   useEffect(() => {
@@ -31,14 +42,18 @@ function GenerateButton({setDb}) {
 
   /* ------------------- Update database with reserved seats in state db ------------------- */
   const clickHandler = () => {
-    let data = {...database};
+    if (error) {
+      return;
+    } else {
+      let data = {...database};
 
-    for (let i = 0; i < reservedSeats.length; i++) {
-      data = {...data, [reservedSeats[i]]: {...data[reservedSeats[i]], reserved: true}};
-      setDb(data);
+      for (let i = 0; i < reservedSeats.length; i++) {
+        data = {...data, [reservedSeats[i]]: {...data[reservedSeats[i]], reserved: true}};
+        setDb(data);
+      }
+
+      setReservedSeats(GenerateReservedSeats(database, numberOfReservedSeats));
     }
-
-    setReservedSeats(GenerateReservedSeats(database, numberOfReservedSeats));
   };
 
   return (
@@ -46,17 +61,21 @@ function GenerateButton({setDb}) {
       <div className='input-title'>Occupied seats</div>
       <div>
         <input
-          type='number'
+          type='text'
           name='reservedSeats'
-          min={MIN_NUMBER_OF_SEATS_RESERVED}
-          max={DB_LENGTH}
+          pattern='[0-9]*'
           value={numberOfReservedSeats}
           onChange={changeHandler}
         />
-        <button type='button' onClick={clickHandler}>
+        <button type='button' onClick={clickHandler} disabled={error}>
           Generate
         </button>
       </div>
+      {error ? (
+        <small className='error'>{`(Min: ${minNumberOfReservedSeats}, Max: ${databaseLength})`}</small>
+      ) : (
+        <small>{`(Min: ${minNumberOfReservedSeats}, Max: ${databaseLength})`}</small>
+      )}
     </div>
   );
 }

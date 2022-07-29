@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -6,6 +8,7 @@
 
 body {
   background-color: rgb(255, 249, 235);
+  font-family: 'Courier Prime', monospace;
 }
 
 .App {
@@ -24,12 +27,13 @@ body {
   justify-items: center;
   align-items: center;
   grid-template-columns: 1fr 3fr 1fr;
-  grid-template-rows: .5fr 3fr .5fr 2fr;
+  grid-template-rows: .5fr 3fr .5fr 1fr 1fr;
   grid-template-areas: 
     ". grid-item-header ."
     "grid-item-left grid-item-middle grid-item-right"
     "grid-item-legend grid-item-legend grid-item-legend"
-    "grid-item-input grid-item-input grid-item-input";
+    "grid-item-input grid-item-input grid-item-input"
+    ". grid-item-footer .";
 }
 
 .grid-item-header {
@@ -65,12 +69,21 @@ body {
   display: flex;
 }
 
+.grid-item-footer {
+  grid-area: grid-item-footer;
+}
+
 .area-container-middle {
   margin-top: 40px;
 }
 
 .area-container-side {
   margin-top: 80px;
+}
+
+.area-title {
+  text-align: center;
+  margin-bottom: 5px;
 }
 
 .grid-item-left .area-container-side:first-child {
@@ -162,6 +175,7 @@ body {
   width: fit-content;
   display: flex;
   gap: 40px;
+  margin-top: 20px;
 }
 
 .legend-item {
@@ -184,6 +198,9 @@ body {
   display: flex;
   justify-content: space-between;
   margin-top: 40px;
+  padding: 20px 0px;
+  border-top: 1px solid rgb(138, 138, 138);
+  border-bottom: 1px solid rgb(138, 138, 138);
 }
 
 .input-item {
@@ -197,6 +214,7 @@ body {
 .seat-input-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .seat-input-container button {
@@ -210,6 +228,8 @@ body {
   font-size: 30px;
   font-weight: 100;
   transition: all .3s ease-out;
+  font-family: 'Courier Prime', monospace;
+  margin-bottom: 10px;
 }
 
 .seat-input-container button:hover {
@@ -219,7 +239,6 @@ body {
 .seat-input-container button:disabled {
   background-color: rgb(190, 190, 190);
   cursor: initial;
-  opacity: 1;
 }
 
 .seat-input-container .input-result {
@@ -233,6 +252,7 @@ body {
 .occupied-input-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .occupied-input-container button {
@@ -243,14 +263,21 @@ body {
   border-radius: 5px;
   background-color: rgb(138, 138, 138);
   color: white;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 100;
   transition: all .3s ease-out;
   margin-left: 20px;
+  font-family: 'Courier Prime', monospace;
+  margin-bottom: 10px;
 }
 
 .occupied-input-container button:hover {
   background-color: rgb(167, 167, 167);
+}
+
+.occupied-input-container button:disabled {
+  background-color: rgb(190, 190, 190);
+  cursor: initial;
 }
 
 .occupied-input-container input {
@@ -260,6 +287,7 @@ body {
   background-color: rgb(255, 249, 235); 
   width: 70px;
   outline: none;
+  font-family: 'Courier Prime', monospace;
 }
 /* ------------------ */
 
@@ -267,12 +295,50 @@ body {
 .result-container {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
+
+/* ------------------ */
+
+/* ResetButton */
+.reset-button-container {
+  width: 33%;
+}
+
+.reset-button-container button{
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  padding: 7px;
+  border-radius: 5px;
+  background-color: #ff6a6a;
+  color: white;
+  font-size: 20px;
+  font-weight: 100;
+  transition: all .3s ease-out; 
+  font-family: 'Courier Prime', monospace;
+}
+
+.reset-button-container button:hover {
+  background-color: #ff4f4f;
+  display: flex;
+  align-items: center;
+}
+/* ------------------ */
 
 .input-title {
   font-size: 20px;
   text-align: center;
   margin-bottom: 10px;
+}
+
+.error {
+  color: #ff4f4f;
+  font-weight: bold;
+}
+
+.result {
+  font-weight: bold;
 }
 
 

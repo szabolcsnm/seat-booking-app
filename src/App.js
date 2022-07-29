@@ -1,11 +1,13 @@
 import './App.css';
 import {useCallback, useEffect, useState} from 'react';
 import GenerateButton from './components/GenerateButton';
-import FindPlaces from './components/FindPlaces';
+import SetPlaces from './components/SetPlaces';
 import DisplayResult from './components/DisplayResult';
+import ResetButton from './components/ResetButton';
 import database from './database/db.js';
 
-const DEFAULT_PLACES = 2;
+const MIN_NUMBER_OF_PLACES_TO_BOOK = 2;
+const MAX_NUMBER_OF_PLACES_TO_BOOK = 8;
 const CATEGORY_ARRAY = [
   {id: 1, seats: []}, // Auditorium 5000
   {id: 2, seats: []}, // Balcony-Mid 5000
@@ -35,6 +37,8 @@ const PRICE_CATEGORY = {
   3000: 'seat-blue',
   2000: 'seat-green',
 };
+const DB_LENGTH = Object.keys(database).length;
+const MIN_NUMBER_OF_SEATS_RESERVED = Math.floor((20 * DB_LENGTH) / 100);
 
 /* ------------------- Calculate row number  -------------------*/
 const calculateRowNumber = (db, category) => {
@@ -101,6 +105,8 @@ const findPlaceOptions = (db, placesToBook, category) => {
   let currentRow = Math.min(...calculateRowNumber(db, category));
 
   for (let i = 0; i < category.length; i++) {
+    // debugger;
+    
     if (counter === placesToBook) {
       optionsArray.push({[tempWeigth + currentRow * currentRow]: [...tempResult]});
       tempResult = [];
@@ -108,12 +114,19 @@ const findPlaceOptions = (db, placesToBook, category) => {
       counter = 0;
       i = i - (placesToBook - 1);
     }
-
     if (counter < placesToBook) {
       if (currentRow !== Object.entries(db)[Number(category[i]) - 1][1].row) {
         tempResult = [];
         tempWeigth = 0;
         counter = 0;
+      }
+
+      if(typeof Object.entries(db)[Number(category[i] - 2)] !== 'undefined') {
+        if(category[i] - category[i - 1] !== 1) {
+          tempResult = [];
+          tempWeigth = 0;
+          counter = 0;
+        }
       }
 
       if (Object.entries(db)[Number(category[i]) - 1][1].reserved === false) {
@@ -134,14 +147,16 @@ const findPlaceOptions = (db, placesToBook, category) => {
       }
     }
   }
-  console.log(optionsArray);
   return optionsArray;
 };
 
 function App() {
-  const [places, setPlaces] = useState(DEFAULT_PLACES);
+  const [places, setPlaces] = useState(MIN_NUMBER_OF_PLACES_TO_BOOK);
   const [bestPlaces, setBestPlaces] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [numberOfReservedSeats, setNumberOfReservedSeats] = useState(
+    MIN_NUMBER_OF_SEATS_RESERVED
+  );
   const [db, setDb] = useState(database);
   console.log('---------------render---------------');
 
@@ -259,14 +274,11 @@ function App() {
         }
 
         if (allPlaceOption.length !== 0) {
-          console.log(allPlaceOption);
-
           bestOptions = Math.min(
             ...allPlaceOption.map((item) => {
               return Object.keys(item)[0];
             })
           );
-          console.log(bestOptions);
 
           bestPlaces = Object.values(
             Object.values(
@@ -298,6 +310,7 @@ function App() {
         <div className='grid-item-middle'>
           {/* Auditorium */}
           <div className='area-container-middle'>
+            <div className='area-title'>Auditorium</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -444,6 +457,7 @@ function App() {
           </div>
           {/* Balcony-Middle */}
           <div className='area-container-middle'>
+            <div className='area-title'>Balcony Middle</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -486,6 +500,7 @@ function App() {
         <div className='grid-item-left'>
           {/* Box-Left-1 */}
           <div className='area-container-side'>
+            <div className='area-title'>Box Left 1.</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -525,6 +540,7 @@ function App() {
           </div>
           {/* Box-Left-2 */}
           <div className='area-container-side'>
+            <div className='area-title'>Box Left 2.</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -564,6 +580,7 @@ function App() {
           </div>
           {/* Balcony-Left */}
           <div className='area-container-side'>
+            <div className='area-title'>Balcony Left</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -606,6 +623,7 @@ function App() {
         <div className='grid-item-right'>
           {/* Box-Right-1 */}
           <div className='area-container-side'>
+            <div className='area-title'>Box Right 1.</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -645,6 +663,7 @@ function App() {
           </div>
           {/* Box-Right-2 */}
           <div className='area-container-side'>
+            <div className='area-title'>Box Right 2.</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -684,6 +703,7 @@ function App() {
           </div>
           {/* Balcony-Right */}
           <div className='area-container-side'>
+            <div className='area-title'>Balcony Right</div>
             <div className='seat-container'>
               <p className='row-number'>1</p>
               {Object.keys(db).map((item, index) => {
@@ -755,15 +775,19 @@ function App() {
         <div className='grid-item-input'>
           <div className='input-container'>
             <div className='input-item'>
-              <GenerateButton setDb={setDb} />
+              <GenerateButton setDb={setDb} numberOfReservedSeats={numberOfReservedSeats} setNumberOfReservedSeats={setNumberOfReservedSeats} databaseLength={DB_LENGTH} minNumberOfReservedSeats={MIN_NUMBER_OF_SEATS_RESERVED}/>
             </div>
             <div className='input-item'>
-              <FindPlaces places={places} setPlaces={setPlaces} />
+              <SetPlaces places={places} setPlaces={setPlaces} minNumberOfPlacesToBook={MIN_NUMBER_OF_PLACES_TO_BOOK} maxNumberOfPlacesToBook={MAX_NUMBER_OF_PLACES_TO_BOOK}/>
             </div>
             <div className='input-item'>
               <DisplayResult errorMessage={errorMessage} bestPlaces={bestPlaces} db={db}/>
             </div>
           </div>
+        </div>
+
+        <div className='grid-item-footer'>
+          <ResetButton minNumberOfPlacesToBook={MIN_NUMBER_OF_PLACES_TO_BOOK} setPlaces={setPlaces} setBestPlaces={setBestPlaces} setErrorMessage={setErrorMessage} setNumberOfReservedSeats={setNumberOfReservedSeats} setDb={setDb} minNumberOfReservedSeats={MIN_NUMBER_OF_SEATS_RESERVED}/>
         </div>
       </div>
     </div>

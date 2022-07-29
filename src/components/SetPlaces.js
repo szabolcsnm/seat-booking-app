@@ -1,6 +1,4 @@
-import {useState} from 'react';
-
-function FindPlaces({places, setPlaces}) {
+function SetPlaces({places, setPlaces, minNumberOfPlacesToBook, maxNumberOfPlacesToBook}) {
   const incrementHandler = () => {
     places < 8 && setPlaces(places + 1);
   };
@@ -20,8 +18,9 @@ function FindPlaces({places, setPlaces}) {
           +
         </button>
       </div>
+      <small>{`(Min: ${minNumberOfPlacesToBook}, Max: ${maxNumberOfPlacesToBook})`}</small>
     </div>
   );
 }
 
-export default FindPlaces;
+export default SetPlaces;
