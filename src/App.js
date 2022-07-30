@@ -105,8 +105,7 @@ const findPlaceOptions = (db, placesToBook, category) => {
   let currentRow = Math.min(...calculateRowNumber(db, category));
 
   for (let i = 0; i < category.length; i++) {
-    // debugger;
-    
+
     if (counter === placesToBook) {
       optionsArray.push({[tempWeigth + currentRow * currentRow]: [...tempResult]});
       tempResult = [];
@@ -114,15 +113,17 @@ const findPlaceOptions = (db, placesToBook, category) => {
       counter = 0;
       i = i - (placesToBook - 1);
     }
+
     if (counter < placesToBook) {
+
       if (currentRow !== Object.entries(db)[Number(category[i]) - 1][1].row) {
         tempResult = [];
         tempWeigth = 0;
         counter = 0;
       }
 
-      if(typeof Object.entries(db)[Number(category[i] - 2)] !== 'undefined') {
-        if(category[i] - category[i - 1] !== 1) {
+      if (typeof Object.entries(db)[Number(category[i] - 2)] !== 'undefined') {
+        if (category[i] - category[i - 1] !== 1) {
           tempResult = [];
           tempWeigth = 0;
           counter = 0;
@@ -158,9 +159,8 @@ function App() {
     MIN_NUMBER_OF_SEATS_RESERVED
   );
   const [db, setDb] = useState(database);
-  console.log('---------------render---------------');
 
-  /* ------------------- Create category based on original database -------------------*/
+  /* ------------------- Create categories based on original database -------------------*/
   useEffect(() => {
     const createCategory = (db, categoryArray) => {
       for (let i = 0; i < Object.keys(db).length; i++) {
@@ -239,12 +239,11 @@ function App() {
           }
         }
       }
-      console.log(CATEGORY_ARRAY);
     };
     createCategory(database, CATEGORY_ARRAY);
   }, []);
 
-  /* ------------------- Find best places after having the best place options -------------------*/
+  /* ------------------- Find best places from the place options list -------------------*/
   const findBestPlaces = useCallback(
     (db, categoryArray) => {
       let allPlaceOption = [];
@@ -287,7 +286,6 @@ function App() {
               })[0]
             )
           )[0];
-          console.log(bestPlaces);
 
           setBestPlaces(bestPlaces);
           setErrorMessage('');
@@ -775,19 +773,42 @@ function App() {
         <div className='grid-item-input'>
           <div className='input-container'>
             <div className='input-item'>
-              <GenerateButton setDb={setDb} numberOfReservedSeats={numberOfReservedSeats} setNumberOfReservedSeats={setNumberOfReservedSeats} databaseLength={DB_LENGTH} minNumberOfReservedSeats={MIN_NUMBER_OF_SEATS_RESERVED}/>
+              <GenerateButton
+                setDb={setDb}
+                numberOfReservedSeats={numberOfReservedSeats}
+                setNumberOfReservedSeats={setNumberOfReservedSeats}
+                databaseLength={DB_LENGTH}
+                minNumberOfReservedSeats={MIN_NUMBER_OF_SEATS_RESERVED}
+              />
             </div>
             <div className='input-item'>
-              <SetPlaces places={places} setPlaces={setPlaces} minNumberOfPlacesToBook={MIN_NUMBER_OF_PLACES_TO_BOOK} maxNumberOfPlacesToBook={MAX_NUMBER_OF_PLACES_TO_BOOK}/>
+              <SetPlaces
+                places={places}
+                setPlaces={setPlaces}
+                minNumberOfPlacesToBook={MIN_NUMBER_OF_PLACES_TO_BOOK}
+                maxNumberOfPlacesToBook={MAX_NUMBER_OF_PLACES_TO_BOOK}
+              />
             </div>
             <div className='input-item'>
-              <DisplayResult errorMessage={errorMessage} bestPlaces={bestPlaces} db={db}/>
+              <DisplayResult
+                errorMessage={errorMessage}
+                bestPlaces={bestPlaces}
+                db={db}
+              />
             </div>
           </div>
         </div>
 
         <div className='grid-item-footer'>
-          <ResetButton minNumberOfPlacesToBook={MIN_NUMBER_OF_PLACES_TO_BOOK} setPlaces={setPlaces} setBestPlaces={setBestPlaces} setErrorMessage={setErrorMessage} setNumberOfReservedSeats={setNumberOfReservedSeats} setDb={setDb} minNumberOfReservedSeats={MIN_NUMBER_OF_SEATS_RESERVED}/>
+          <ResetButton
+            minNumberOfPlacesToBook={MIN_NUMBER_OF_PLACES_TO_BOOK}
+            setPlaces={setPlaces}
+            setBestPlaces={setBestPlaces}
+            setErrorMessage={setErrorMessage}
+            setNumberOfReservedSeats={setNumberOfReservedSeats}
+            setDb={setDb}
+            minNumberOfReservedSeats={MIN_NUMBER_OF_SEATS_RESERVED}
+          />
         </div>
       </div>
     </div>

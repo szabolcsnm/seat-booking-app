@@ -40,7 +40,7 @@ function GenerateButton({
     setReservedSeats(GenerateReservedSeats(database, numberOfReservedSeats));
   }, [numberOfReservedSeats]);
 
-  /* ------------------- Update database with reserved seats in state db ------------------- */
+  /* ------------------- Update database with reserved seats in db state ------------------- */
   const clickHandler = () => {
     if (error) {
       return;
