@@ -2,6 +2,8 @@
 
 This is a theater seat booking app that will automatically select best seats based on the given input parameters (how many seats are currently occupied, number of places adjacent to each other).
 
+Demo: https://dashing-phoenix-7bf7f8.netlify.app/
+
 Seats are selected in the below order of preference:
 1. Higher price category
 2. The order of preference of the area
